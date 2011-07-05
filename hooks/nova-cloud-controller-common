@@ -1,6 +1,13 @@
 #!/bin/bash
 SERVICES="nova-api nova-network nova-objectstore nova-scheduler"
 NOVA_CONF="/etc/nova/nova.conf"
+RABBIT_USER="nova-rabbit"
+
+DB_USER="nova"
+NOVA_DB="nova"
+
+DEFAULT_ETH=$(ip route  | grep default | awk '{ print $5 }')
+IP=$(ifconfig  $DEFAULT_ETH | grep 'inet addr' | awk '{ print $2 }' | cut -d: -f2)
 
 function set_or_update {
   # set or update a key=value config option in nova.conf
@@ -24,7 +31,7 @@ function nova_ctl {
     CTL=$1
   fi
   ACTION=$2
-  if [[ -z $2 ]] || [[ -z $ACTION ]] ; then
+  if [[ -z $CTL ]] || [[ -z $ACTION ]] ; then
     ensemble-log "ERROR nova_ctl: Not enough arguments"
     exit 1
   fi

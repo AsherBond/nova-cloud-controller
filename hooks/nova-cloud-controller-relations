@@ -20,24 +20,60 @@ function install_hook {
 }
 
 function amqp_joined {
-  # we request a username+password on the rabbit queue
-  # and store it in nova.conf. our response is its IP
+  # we request a username on the rabbit queue
+  # and store it in nova.conf. our response is its IP + PASSWD
   # but we configure that in _changed
   ensemble-log "amqp_joined: requesting credentials for $RABBIT_USER"
+  echo "amqp_joined: requesting credentials for $RABBIT_USER"
   relation-set username=$RABBIT_USER
-  relation-set password=$RABBIT_PASSWD
 }
 
 function amqp_changed {
   # server creates our credentials and tells us where
-  # to connect
+  # to connect.  for now, using default vhost '/'
   RABBIT_HOST=`relation-get ip`
+  RABBIT_PASSWORD=`relation-get password`  
+  if [[ -z $RABBIT_HOST ]] || [[ -z $RABBIT_PASSWORD ]] ; then
+    echo "amqp_changed: RABBIT_HOST not set. Peer not ready? Exit 0 and retry"
+    exit 0
+  fi
+  echo "amqp_changed: Setting rabbit config in nova.conf: $RABBIT_HOST $RABBIT_USER $RABBIT_PASSWORD"
+  set_or_update rabbit_host $RABBIT_HOST
+  set_or_update rabbit_user $RABBIT_USER
+  set_or_update rabbit_password $RABBIT_PASSWORD
+  nova_ctl all restart
+}
+
+function db_joined {
+  # tell mysql provider which database we want. it will create it and give us
+  # credentials
+  ensemble-log "db_joined: requesting database access to $NOVA_DB for $DB_USER@$IP"
+  relation-set database=$NOVA_DB
+  relation-set username=$DB_USER
+  relation-set hostname=`uname -n`
+  relation-set ip=$IP
+}
+
+function db_changed {
+  DB_HOST=`relation-get db_host`
+  DB_PASSWORD=`relation-get password`
+  if [[ -z $DB_HOST ]] || [[ -z $DB_PASSWORD ]] ; then
+    echo "db_changed: DB_HOST || DB_PASSWORD not yet set. Exit 0 and retry"
+    exit 0
+  fi
+  echo "db_changed: Configuring nova.conf for access to $NOVA_DB"
+  set_or_update sql_connection "mysql://$DB_USER:$DB_PASSWORD@$DB_HOST/$NOVA_DB"
+  nova_ctl all restart
+  sleep 1
+  /usr/bin/nova-manage db sync
 }
 
 case $ARG0 in
   "start"|"stop") nova_ctl all $ARG0 ;;
   "install") install_hook ;;
-  "amqp-relation-joined") exit 0 ;;
-  "amqp-relation-changed") exit 0 ;;
+  "amqp-relation-joined") amqp_joined ;;
+  "amqp-relation-changed") amqp_changed ;;
+  "shared-db-relation-joined") db_joined ;;
+  "shared-db-relation-changed") db_changed ;;
   *) exit 0 ;;
 esac
