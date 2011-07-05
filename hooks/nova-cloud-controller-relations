@@ -1,0 +1,43 @@
+#!/bin/bash
+
+#FORMULA_DIR=/var/lib/ensemble/units/$(echo $ENSEMBLE_UNIT_NAME | sed -e 's/\//-/g')/formula/hooks
+FORMULA_DIR=$(dirname $0)
+ARG0=${0##*/}
+
+if [[ -e $FORMULA_DIR/nova-cloud-controller-common ]] ; then
+  . $FORMULA_DIR/nova-cloud-controller-common
+else
+  echo "ERROR: Could not load nova-cloud-controller-common from $FORMULA_DIR"
+fi
+
+function install_hook {
+  ensemble-log "Installing nova packages"
+  apt-get -y install python-software-properties || exit 1
+  add-apt-repository ppa:nova-core/trunk || exit 1
+  apt-get update || exit 1
+  apt-get -y install $SERVICES || exit 1
+  nova_ctl all stop
+}
+
+function amqp_joined {
+  # we request a username+password on the rabbit queue
+  # and store it in nova.conf. our response is its IP
+  # but we configure that in _changed
+  ensemble-log "amqp_joined: requesting credentials for $RABBIT_USER"
+  relation-set username=$RABBIT_USER
+  relation-set password=$RABBIT_PASSWD
+}
+
+function amqp_changed {
+  # server creates our credentials and tells us where
+  # to connect
+  RABBIT_HOST=`relation-get ip`
+}
+
+case $ARG0 in
+  "start"|"stop") nova_ctl all $ARG0 ;;
+  "install") install_hook ;;
+  "amqp-relation-joined") exit 0 ;;
+  "amqp-relation-changed") exit 0 ;;
+  *) exit 0 ;;
+esac
