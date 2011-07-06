@@ -68,6 +68,14 @@ function db_changed {
   /usr/bin/nova-manage db sync
 }
 
+function image-service_changed {
+  API_SERVER=`relation-get glance-api-server`
+  [[ -z $API_SERVER ]] && echo "image-service_changed: Peer not ready?" && exit 0
+  set_or_update glance_api_servers $API_SERVER
+  set_or_update image_service "nova.image.glance.GlanceImageService"
+  nova_ctl all restart
+}
+
 case $ARG0 in
   "start"|"stop") nova_ctl all $ARG0 ;;
   "install") install_hook ;;
@@ -75,5 +83,7 @@ case $ARG0 in
   "amqp-relation-changed") amqp_changed ;;
   "shared-db-relation-joined") db_joined ;;
   "shared-db-relation-changed") db_changed ;;
+  "image-service-relation-joined") exit 0 ;;
+  "image-service-relation-changed") image-service_changed ;;
   *) exit 0 ;;
 esac
