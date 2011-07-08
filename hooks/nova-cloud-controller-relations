@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#FORMULA_DIR=/var/lib/ensemble/units/$(echo $ENSEMBLE_UNIT_NAME | sed -e 's/\//-/g')/formula/hooks
 FORMULA_DIR=$(dirname $0)
 ARG0=${0##*/}
 
@@ -16,6 +15,7 @@ function install_hook {
   add-apt-repository ppa:nova-core/trunk || exit 1
   apt-get update || exit 1
   apt-get -y install $SERVICES || exit 1
+  configure_network_manager $NETWORK_MANAGER
   nova_ctl all stop
 }
 
@@ -32,7 +32,7 @@ function amqp_changed {
   # server creates our credentials and tells us where
   # to connect.  for now, using default vhost '/'
   RABBIT_HOST=`relation-get ip`
-  RABBIT_PASSWORD=`relation-get password`  
+  RABBIT_PASSWORD=`relation-get password`
   if [[ -z $RABBIT_HOST ]] || [[ -z $RABBIT_PASSWORD ]] ; then
     echo "amqp_changed: RABBIT_HOST not set. Peer not ready? Exit 0 and retry"
     exit 0
@@ -76,6 +76,16 @@ function image-service_changed {
   nova_ctl all restart
 }
 
+function nova-network_joined {
+  # this will be moved to its own nova-network formula when the
+  # time comes.  for now, tell peer what network manager we are
+  # using, and let them configure accordingly. we may want to also
+  # take care of assigning non-conflicting IPs to compute nodes
+  manager=$(cat $NOVA_CONF | grep network_manager | cut -d= -f2)
+  manager=$(echo $manager | sed -e 's/\./ /g' | awk '{ print $4 }')
+  relation-set network_manager=$manager
+}
+
 case $ARG0 in
   "start"|"stop") nova_ctl all $ARG0 ;;
   "install") install_hook ;;
@@ -85,5 +95,6 @@ case $ARG0 in
   "shared-db-relation-changed") db_changed ;;
   "image-service-relation-joined") exit 0 ;;
   "image-service-relation-changed") image-service_changed ;;
+  "nova-network-relation-joined") nova-network_joined ;;
   *) exit 0 ;;
 esac

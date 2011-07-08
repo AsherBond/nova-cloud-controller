@@ -1,12 +1,14 @@
 ensemble: formula
 name: nova-cloud-controller
-revision: 27
+revision: 30
 summary: "Openstack nova controller node."
 description: |
   Cloud controller node for Openstack nova.  Contains nova-schedule,
   nova-api, nova-network and nova-objectstore.
 provides:
   cloud-controller:
+    interface: nova
+  nova-network:
     interface: nova
 requires:
   shared-db:
