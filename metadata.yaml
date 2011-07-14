@@ -1,6 +1,6 @@
 ensemble: formula
 name: nova-cloud-controller
-revision: 30
+revision: 33
 summary: "Openstack nova controller node."
 description: |
   Cloud controller node for Openstack nova.  Contains nova-schedule,
@@ -12,7 +12,7 @@ provides:
     interface: nova
 requires:
   shared-db:
-    interface: mysql
+    interface: mysql-shared
   amqp:
     interface: rabbitmq
   image-service:
