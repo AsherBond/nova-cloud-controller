@@ -18,6 +18,10 @@ BRIDGE_NETMASK="255.255.255.0"
 DEFAULT_ETH=$(ip route  | grep default | awk '{ print $5 }')
 IP=$(ifconfig  $DEFAULT_ETH | grep 'inet addr' | awk '{ print $2 }' | cut -d: -f2)
 
+. /etc/lsb-release
+PPA="milestone"
+PPA_URL="deb http://ppa.launchpad.net/nova-core/$PPA/ubuntu $DISTRIB_CODENAME  main"
+
 function set_or_update {
   # set or update a key=value config option in nova.conf
   KEY=$1
