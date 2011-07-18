@@ -1,5 +1,7 @@
 #!/bin/bash
 SERVICES="nova-api nova-network nova-objectstore nova-scheduler"
+PACKAGES="$SERVICES python-mysqldb"
+
 NOVA_CONF="/etc/nova/nova.conf"
 
 # we'll request credentials via the amqp relation for this user

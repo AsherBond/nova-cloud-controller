@@ -15,7 +15,7 @@ function install_hook {
   add-apt-repository "$PPA_URL" || exit 1
   apt-get update || exit 1
   DEBIAN_FRONTEND=noninteractive apt-get -y \
-    install --no-install-recommends $SERVICES || exit 1
+    install --no-install-recommends $PACKAGES || exit 1
   configure_network_manager $NETWORK_MANAGER
   nova_ctl all stop
 }
