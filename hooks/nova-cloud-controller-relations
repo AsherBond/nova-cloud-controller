@@ -51,7 +51,7 @@ function db_joined {
   ensemble-log "db_joined: requesting database access to $NOVA_DB for $DB_USER@$IP"
   relation-set database=$NOVA_DB
   relation-set username=$DB_USER
-  relation-set hostname=`uname -n`
+  relation-set hostname=`hostname -f`
   relation-set ip=$IP
 }
 
