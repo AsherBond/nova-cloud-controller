@@ -6,7 +6,7 @@ NOVA_CONF="/etc/nova/nova.conf"
 
 # we'll request credentials via the amqp relation for this user
 RABBIT_USER="nova-rabbit"
-
+RABBIT_VHOST="nova"
 # the database we'll be requesting via shared-db relations
 DB_USER="nova"
 NOVA_DB="nova"
