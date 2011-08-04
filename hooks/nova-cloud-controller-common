@@ -35,6 +35,17 @@ function set_or_update {
   fi
 }
 
+function nova_ctl_status {
+  SERVICE=$1
+  # workaround upstarts lack of scriptable return codes
+  STATUS=$(service $SERVICE status | cut -d/ -f1 | awk '{ print $2 }')
+  case $STATUS in
+    "start") return 0 ;;
+    "stop") return 1 ;;
+    *) echo "ERROR: Unexpected status of service $SERVICE: $STATUS" && exit 1 ;;
+  esac
+}
+
 function nova_ctl {
   if [[ $1 == "all" ]] ; then
     CTL=$SERVICES
@@ -47,9 +58,16 @@ function nova_ctl {
     exit 1
   fi
   for i in $CTL ; do
-    service $i $ACTION
+    case $ACTION in
+      "start")
+        nova_ctl_status $i || service $i start ;;
+      "stop")
+        nova_ctl_status $i && service $i stop || return 0 ;;
+      "restart")
+        nova_ctl_status $i && service $i restart || service $i start ;;
+    esac
     if [[ $? != 0 ]] ; then
-      ensemble-log "ERROR nova_ctl: Service $i failed to $ACTION"
+      ensemble-log "nova_ctl: ERROR - Service $i failed to $ACTION"
     fi
   done
 }
