@@ -1,0 +1,11 @@
+nova-cloud-controller:
+  nova-release: trunk
+  nova-config: /etc/nova/nova.conf
+  db-user: nova
+  nova-db: nova
+  rabbit-user: nova
+  rabbit-vhost: nova
+  network-manager: FlatManager
+  bridge-interface: br100
+  bridge-ip: 11.0.0.1
+  bridge-netmask: 255.255.255.0
