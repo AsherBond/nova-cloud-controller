@@ -2,23 +2,25 @@
 SERVICES="nova-api nova-network nova-objectstore nova-scheduler"
 PACKAGES="$SERVICES python-mysqldb"
 
-NOVA_CONF="/etc/nova/nova.conf"
+NOVA_CONF=$(config-get nova-config)
 
 # we'll request credentials via the amqp relation for this user
-RABBIT_USER="nova-rabbit"
-RABBIT_VHOST="nova"
+RABBIT_USER=$(config-get rabbit-user)
+RABBIT_VHOST=$(config-get rabbit-vhost)
 # the database we'll be requesting via shared-db relations
-DB_USER="nova"
-NOVA_DB="nova"
+DB_USER=$(config-get db-user)
+NOVA_DB=$(config-get nova-db)
 
 # for now we require a network bridge, here's what we'll configure
-NETWORK_MANAGER="FlatManager"
-NETWORK_BRIDGE="br100"
-BRIDGE_IP="11.0.0.1"
-BRIDGE_NETMASK="255.255.255.0"
+NETWORK_MANAGER=$(config-get network-manager)
+NETWORK_BRIDGE=$(config-get bridge-interface)
+BRIDGE_IP=$(config-get bridge-ip)
+BRIDGE_NETMASK=$(config-get bridge-netmask)
 
 DEFAULT_ETH=$(ip route  | grep default | awk '{ print $5 }')
 IP=$(ifconfig  $DEFAULT_ETH | grep 'inet addr' | awk '{ print $2 }' | cut -d: -f2)
+
+PPA=$(config-get nova-release)
 
 function set_or_update {
   # set or update a key=value config option in nova.conf
@@ -113,16 +115,11 @@ function configure_network_manager {
 }
 
 function add_ppa {
-  # temporarily find out what nova version we
-  # should be using from a source file.  this
-  # should go away when ensemble can handle config
-  # better.
-  if [[ -e $FORMULA_DIR/nova-version ]] ; then
-    . $FORMULA_DIR/nova-version
-    . /etc/lsb-release
-    [[ -z $PPA ]] && return 0
-    PPA_URL="deb http://ppa.launchpad.net/nova-core/$PPA/ubuntu $DISTRIB_CODENAME main"
-    add-apt-repository "$PPA_URL" || exit 1
-  fi
+  # don't setup PPA, install from archive
+  [[ $PPA == "distro" ]] && return 0
+  ensemble-log "nova-cloud-controller: Configuring PPA access for $PPA"
+  . /etc/lsb-release
+  PPA_URL="deb http://ppa.launchpad.net/nova-core/$PPA/ubuntu $DISTRIB_CODENAME main"
+  add-apt-repository "$PPA_URL" || exit 1
 }
 
