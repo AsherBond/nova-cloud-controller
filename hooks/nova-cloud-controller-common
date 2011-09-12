@@ -1,5 +1,5 @@
 #!/bin/bash
-SERVICES="nova-api nova-network nova-objectstore nova-scheduler"
+SERVICES="nova-api nova-objectstore nova-scheduler"
 PACKAGES="$SERVICES python-mysqldb"
 
 NOVA_CONF=$(config-get nova-config)
