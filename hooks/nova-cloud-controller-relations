@@ -87,7 +87,7 @@ function nova-network_joined {
   # take care of assigning non-conflicting IPs to compute nodes
   manager=$(cat $NOVA_CONF | grep network_manager | cut -d= -f2)
   manager=$(echo $manager | sed -e 's/\./ /g' | awk '{ print $4 }')
-  relation-set network_manager=$manager
+  relation-set network_manager=$manager ec2_host=$(hostname -f)
 }
 
 case $ARG0 in
