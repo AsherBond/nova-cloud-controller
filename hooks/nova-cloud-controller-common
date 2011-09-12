@@ -11,11 +11,7 @@ RABBIT_VHOST=$(config-get rabbit-vhost)
 DB_USER=$(config-get db-user)
 NOVA_DB=$(config-get nova-db)
 
-# for now we require a network bridge, here's what we'll configure
 NETWORK_MANAGER=$(config-get network-manager)
-NETWORK_BRIDGE=$(config-get bridge-interface)
-BRIDGE_IP=$(config-get bridge-ip)
-BRIDGE_NETMASK=$(config-get bridge-netmask)
 
 DEFAULT_ETH=$(ip route  | grep default | awk '{ print $5 }')
 IP=$(ifconfig  $DEFAULT_ETH | grep 'inet addr' | awk '{ print $2 }' | cut -d: -f2)
@@ -106,9 +102,16 @@ function configure_network_manager {
   echo "$0: configuring $1 network manager"
   case $1 in
     "FlatManager")
+      NETWORK_BRIDGE=$(config-get bridge-interface)
+      BRIDGE_IP=$(config-get bridge-ip)
+      BRIDGE_NETMASK=$(config-get bridge-netmask)
       setup_bridge $NETWORK_BRIDGE $BRIDGE_IP $BRIDGE_NETMASK
       set_or_update network_manager nova.network.manager.FlatManager
       set_or_update flat_network_bridge $NETWORK_BRIDGE
+      ;;
+    "FlatDHCPManager")
+      set_or_update network_manager nova.network.manager.FlatDHCPManager
+      relation-set ec2_host=$(hostname -f)
       ;;
     *) echo "ERROR: Invalid network manager $1" && exit 1 ;;
   esac
