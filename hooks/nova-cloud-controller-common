@@ -25,7 +25,7 @@ function set_or_update {
   [[ -z $KEY ]] && exit 1
   [[ -z $VALUE ]] && exit 1
   cat $NOVA_CONF | grep "\-\-$KEY=$VALUE" >/dev/null \
-   && ensemble-log "nova-cloud-controller: $KEY=$VALUE already set" exit 0
+   && juju-log "nova-cloud-controller: $KEY=$VALUE already set" exit 0
   if cat $NOVA_CONF | grep "\-\-$KEY=" >/dev/null ; then
     sed -i "s|\(--$KEY=\).*|\1$VALUE|" $NOVA_CONF
   else
@@ -52,7 +52,7 @@ function nova_ctl {
   fi
   ACTION=$2
   if [[ -z $CTL ]] || [[ -z $ACTION ]] ; then
-    ensemble-log "ERROR nova_ctl: Not enough arguments"
+    juju-log "ERROR nova_ctl: Not enough arguments"
     exit 1
   fi
   for i in $CTL ; do
@@ -65,7 +65,7 @@ function nova_ctl {
         nova_ctl_status $i && service $i restart || service $i start ;;
     esac
     if [[ $? != 0 ]] ; then
-      ensemble-log "nova_ctl: ERROR - Service $i failed to $ACTION"
+      juju-log "nova_ctl: ERROR - Service $i failed to $ACTION"
     fi
   done
 }
@@ -119,7 +119,7 @@ function configure_network_manager {
 function add_ppa {
   # don't setup PPA, install from archive
   [[ $PPA == "distro" ]] && return 0
-  ensemble-log "nova-cloud-controller: Configuring PPA access for $PPA"
+  juju-log "nova-cloud-controller: Configuring PPA access for $PPA"
   . /etc/lsb-release
   PPA_URL="deb http://ppa.launchpad.net/nova-core/$PPA/ubuntu $DISTRIB_CODENAME main"
   add-apt-repository "$PPA_URL" || exit 1

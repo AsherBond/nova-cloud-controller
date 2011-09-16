@@ -10,7 +10,7 @@ else
 fi
 
 function install_hook {
-  ensemble-log "Installing nova packages"
+  juju-log "Installing nova packages"
   apt-get -y install python-software-properties || exit 1
   add_ppa
   apt-get update || exit 1
@@ -24,7 +24,7 @@ function amqp_joined {
   # we request a username on the rabbit queue
   # and store it in nova.conf. our response is its IP + PASSWD
   # but we configure that in _changed
-  ensemble-log "amqp_joined: requesting credentials for $RABBIT_USER"
+  juju-log "amqp_joined: requesting credentials for $RABBIT_USER"
   echo "amqp_joined: requesting credentials for $RABBIT_USER"
   relation-set username=$RABBIT_USER
   relation-set vhost=$RABBIT_VHOST
@@ -51,7 +51,7 @@ function amqp_changed {
 function db_joined {
   # tell mysql provider which database we want. it will create it and give us
   # credentials
-  ensemble-log "db_joined: requesting database access to $NOVA_DB for $DB_USER@$IP"
+  juju-log "db_joined: requesting database access to $NOVA_DB for $DB_USER@$IP"
   relation-set database=$NOVA_DB
   relation-set username=$DB_USER
   relation-set hostname=`hostname -f`
