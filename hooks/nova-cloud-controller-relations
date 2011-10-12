@@ -33,7 +33,7 @@ function amqp_joined {
 function amqp_changed {
   # server creates our credentials and tells us where
   # to connect.  for now, using default vhost '/'
-  RABBIT_HOST=`relation-get hostname`
+  RABBIT_HOST=`relation-get private-address`
   RABBIT_PASSWORD=`relation-get password`
   if [[ -z $RABBIT_HOST ]] || \
      [[ -z $RABBIT_PASSWORD ]] ; then 
@@ -54,7 +54,7 @@ function db_joined {
   juju-log "db_joined: requesting database access to $NOVA_DB for $DB_USER@$IP"
   relation-set database=$NOVA_DB
   relation-set username=$DB_USER
-  relation-set hostname=`hostname -f`
+  relation-set hostname=`unit-get private-address`
   relation-set ip=$IP
 }
 
@@ -87,7 +87,7 @@ function nova-network_joined {
   # take care of assigning non-conflicting IPs to compute nodes
   manager=$(cat $NOVA_CONF | grep network_manager | cut -d= -f2)
   manager=$(echo $manager | sed -e 's/\./ /g' | awk '{ print $4 }')
-  relation-set network_manager=$manager ec2_host=$(hostname -f)
+  relation-set network_manager=$manager ec2_host=$(unit-get private-address)
 }
 
 case $ARG0 in
