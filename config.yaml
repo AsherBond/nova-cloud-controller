@@ -24,7 +24,7 @@ options:
     type: string
     description: Database name
   network-manager:
-    default: FlatManager
+    default: FlatDHCPManager
     type: string
     description: Network manager for nova-network
   bridge-interface:
