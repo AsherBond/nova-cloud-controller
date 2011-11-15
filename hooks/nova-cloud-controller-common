@@ -13,9 +13,6 @@ NOVA_DB=$(config-get nova-db)
 
 NETWORK_MANAGER=$(config-get network-manager)
 
-DEFAULT_ETH=$(ip route  | grep default | awk '{ print $5 }')
-IP=$(ifconfig  $DEFAULT_ETH | grep 'inet addr' | awk '{ print $2 }' | cut -d: -f2)
-
 PPA=$(config-get nova-release)
 
 function set_or_update {

@@ -51,11 +51,10 @@ function amqp_changed {
 function db_joined {
   # tell mysql provider which database we want. it will create it and give us
   # credentials
-  juju-log "db_joined: requesting database access to $NOVA_DB for $DB_USER@$IP"
+  juju-log "db_joined: requesting database access to $NOVA_DB for $DB_USER@$HOSTNAME"
   relation-set database=$NOVA_DB
   relation-set username=$DB_USER
   relation-set hostname=`unit-get private-address`
-  relation-set ip=$IP
 }
 
 function db_changed {
