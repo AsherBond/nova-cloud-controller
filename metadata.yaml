@@ -1,5 +1,6 @@
 ensemble: formula
 name: nova-cloud-controller
+maintainer: Adam Gandelman <adamg@canonical.com>
 summary: "Openstack nova controller node."
 description: |
   Cloud controller node for Openstack nova.  Contains nova-schedule,
